@@ -1,0 +1,8 @@
+1
+przeniesc logike thumbnail do serializera
+2
+w modelu ma nie byc thumbnail, ma byc convvertowany dynamicznie wzgledem user permission
+3
+trzeba popracowac nad user permission
+4
+trzeba zrozumiec ten link expired.
