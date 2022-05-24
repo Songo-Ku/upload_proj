@@ -6,3 +6,10 @@ w modelu ma nie byc thumbnail, ma byc convvertowany dynamicznie wzgledem user pe
 trzeba popracowac nad user permission
 4
 trzeba zrozumiec ten link expired.
+
+
+
+
+1 link expired jak to zrobic zeby to sprawdzic i gdzzie ??
+2 validacja 300-30000 ale chodzi o wylaczenie jej dla admina
+3 jak te tiery zrobic jako grupa account ? nadac taka grupe dla usera?
