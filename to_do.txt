@@ -13,3 +13,18 @@ trzeba zrozumiec ten link expired.
 1 link expired jak to zrobic zeby to sprawdzic i gdzzie ??
 2 validacja 300-30000 ale chodzi o wylaczenie jej dla admina
 3 jak te tiery zrobic jako grupa account ? nadac taka grupe dla usera?
+4 throttling
+
+
+
+Jak będzie generowany to zapisz jakoś jako timestamp czas jego wygenerowania do zmiennej czy modelu
+Potem w widoku na get() sprawdzaj czy jest przestarzały i jak jest to go nie wyświetlaj
+
+duration nei jest potrzebne w modelu glownym
+duration powinno byc w modelu expired_link
+
+w momencie dodania duration system powinien tworzyc obiekt z relacja
+jak juz zrobi to wtedy powinien przekierowac jako image link, ktore ma byc wygasniety o ilosc duration od tego czasu
+w momencie kiedy property bedzie true czyli przeterminowany to ma po prostu nie dac odpalic tego linku
+
+

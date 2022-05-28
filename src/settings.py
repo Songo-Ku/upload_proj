@@ -21,7 +21,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'image',
+    'user',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -39,7 +41,7 @@ ROOT_URLCONF = 'src.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': os.path.join(BASE_DIR, 'templates'),
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -101,5 +103,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploaded_media')
 MEDIA_URL = '/media/'
+TEMP_ROOT = os.path.join(BASE_DIR, 'temp')
+TEMP_URL = '/temp/'
+
+AUTH_USER_MODEL = 'user.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}

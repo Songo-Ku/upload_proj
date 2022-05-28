@@ -1,18 +1,94 @@
 from rest_framework import serializers
-from image.models import UploadedImage
+from image.models import UploadedImage, ExpiredLink
+from django.core.validators import MaxValueValidator, MinValueValidator
 
-import uuid
-import os
 
-from django.conf import settings
-from PIL import Image
+
+class ExpLinkOnlySerializer(serializers.ModelSerializer):
+    link = serializers.ReadOnlyField()
+
+    class Meta:
+        model = ExpiredLink
+        fields = ['link']
+
+
+class CreateUploadedImageBasicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadedImage
+        fields = ('pk', 'image', 'thumbnail_200px')
+        read_only_fields = ['pk', 'thumbnail_200px']
+
+
+class CreateUploadedImagePremiumSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadedImage
+        fields = ('pk', 'image', 'user', 'thumbnail_200px', 'thumbnail_400px')
+        read_only_fields = ['pk', 'thumbnail_200px', 'thumbnail_400px']
+
+
+class CreateUploadedImageEnterpriseSerializer(serializers.ModelSerializer):
+    duration = serializers.IntegerField(validators=[MaxValueValidator(30000), MinValueValidator(300)])
+
+    class Meta:
+        model = UploadedImage
+        fields = ('pk', 'image', 'duration')
+        read_only_fields = ['pk']
+
+
+class ListUploadedImageBasicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadedImage
+        fields = ['image', 'thumbnail_200px']
+
+
+class ListUploadedImagePremiumSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadedImage
+        fields = ['image', 'thumbnail_200px', 'thumbnail_400px']
+
+
+class ListUploadedImageEnterpriseSerializer(serializers.ModelSerializer):
+    date_expire_link = serializers.CharField(source='expired_link.expiry_date')
+    expire_link = serializers.ImageField(source='expired_link.link')
+    photo_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UploadedImage
+        fields = ['pk', 'thumbnail_200px', 'thumbnail_400px', 'image',
+                  'date_expire_link', 'expire_link', 'photo_url']
+
+    def get_photo_url(self, uploaded_image):
+        request = self.context.get('request')
+        print('link \n\n', uploaded_image.expired_link.link, 'link \n\n')
+
+        return f'{uploaded_image.expired_link.link}'
 
 
 class UploadedImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = UploadedImage
-        fields = ('pk', 'image', 'title', 'user')
+        fields = ('pk', 'image', 'user', 'thumbnail_200px', 'thumbnail_400px')
         read_only_fields = ['pk']
+
+
+class ExpLinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExpiredLink
+        read_only_fields = ['pk']
+        fields = '__all__'
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # def validate_month(self, value):
     #     # print('validuje month')
@@ -35,28 +111,3 @@ class UploadedImageSerializer(serializers.ModelSerializer):
     #         raise serializers.ValidationError("Inproperly selected day and month. That date doesnt exist!")
     #     return data
 
-def code_uploaded_filename(instance, filename):
-    print(filename, '\n to jest split filename')
-    print(filename.split(".")[-1], '\n to ostatni element filename')
-    extension = filename.split(".")[-1]
-    return "{}.{}".format(uuid.uuid4(), extension)
-
-
-def create_thumbnail(input_image, thumbnail_size=(200, 200)):
-    if not input_image or input_image == "":
-        return None
-    image = Image.open(input_image)
-    image.thumbnail(thumbnail_size, Image.ANTIALIAS)
-    # parse the filename and scramble it
-    filename = code_uploaded_filename(None, os.path.basename(input_image.name))
-    arrdata = filename.split(".")
-    # extension is in the last element, pop it
-    extension = arrdata.pop()
-    basename = "".join(arrdata)
-    # add _thumb to the filename
-    new_filename = basename + "_thumb." + extension
-    # save the image in MEDIA_ROOT and return the filename
-    print('new name \n', new_filename)
-    print('os path join \n', os.path.join(settings.MEDIA_ROOT, new_filename))
-    image.save(os.path.join(settings.MEDIA_ROOT, new_filename))
-    return new_filename
