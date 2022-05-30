@@ -1,1 +1,0 @@
-Project include rescale functionality to automatyically match scale depend on high thumbnail 200 or 400 height. 

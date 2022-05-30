@@ -1,11 +1,8 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-# Register your models here.
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-
 from user.models import User
 
-# admin.site.register(User)
 
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
