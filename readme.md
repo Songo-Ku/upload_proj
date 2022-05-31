@@ -1,10 +1,11 @@
 Description:
 
-    Api with uploading functionalities for 3 tiers plan (basic, premium, eterprise). 
+    Api based on DRF with uploading functionalities for 3 tiers plan (basic, premium, eterprise) and format png, jpg. 
     Project contain implemented expire link, custom user with plan field, fields are validating according to project
     Auth: /api-token-auth for obtain-auth-token. 
     Only user with defined one of 3 plans can create uploading and read his list of uploaded files.  
     User can use actions: list, post(create upload and token). 
+    Main libraries: Pillow, DRF, Django, Drf.auth, Django environ.
 
 Test:
 
