@@ -36,3 +36,14 @@ This is example of .env file:
     SECRET_KEY='django-insecure-)-a1bb98%ga8k17+s&40r&=%q@l^t=csk7winebcxepzin80b!'
     DEBUG=False
     DOMAIN_URL='http://127.0.0.1:8000/'
+
+Instruction:
+    
+    copy: git clone from gitlab
+    pip install - requirements.txt
+    python manage.py makemigrations && python manage.py migrate & python manage.py createsuperuser 
+    python manage.py runserver
+    before runserver highly recommended to python manage.py test
+    which will turn on test and check is everything fine with project before up.
+    from console click to url generated.
+    User can execute commend python manage.py collectstatic to prepare staticfiles to good look website.
