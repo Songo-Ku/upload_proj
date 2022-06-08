@@ -5,7 +5,6 @@ import os
 env = environ.Env()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 DOMAIN_URL = env('DOMAIN_URL')
@@ -45,7 +44,7 @@ ROOT_URLCONF = 'src.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': os.path.join(BASE_DIR, 'templates'),
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,22 +85,21 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Europe/Warsaw'
 
+USE_TZ = True
+
+
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
-
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploaded_media')
 MEDIA_URL = '/media/'
-TEMP_ROOT = os.path.join(BASE_DIR, 'temp')
-TEMP_URL = '/temp/'
 
 AUTH_USER_MODEL = 'user.User'
 

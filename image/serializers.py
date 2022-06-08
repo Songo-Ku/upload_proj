@@ -4,14 +4,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.conf import settings
 
 
-class ExpLinkOnlySerializer(serializers.ModelSerializer):
-    link = serializers.ReadOnlyField()
-
-    class Meta:
-        model = ExpiredLink
-        fields = ['link']
-
-
 class CreateUploadedImageBasicSerializer(serializers.ModelSerializer):
     class Meta:
         model = UploadedImage
@@ -27,7 +19,13 @@ class CreateUploadedImagePremiumSerializer(serializers.ModelSerializer):
 
 
 class CreateUploadedImageEnterpriseSerializer(serializers.ModelSerializer):
-    duration = serializers.IntegerField(validators=[MaxValueValidator(30000), MinValueValidator(300)], required=False)
+    duration = serializers.IntegerField(
+        validators=[
+            MaxValueValidator(30000),
+            MinValueValidator(300)
+        ],
+        required=False
+    )
 
     class Meta:
         model = UploadedImage
@@ -58,8 +56,8 @@ class ListUploadedImageEnterpriseSerializer(serializers.ModelSerializer):
 
     def get_expire_link(self, uploaded_image):
         try:
-            _link = uploaded_image.expired_link.link
-            return f'{settings.DOMAIN_URL}process/{_link}/'
+            uuid = uploaded_image.expired_link.uuid
+            return f'{settings.DOMAIN_URL}temp/{uuid}/'
         except:
             return 'No Expire link added'
 

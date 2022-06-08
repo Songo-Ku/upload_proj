@@ -1,7 +1,8 @@
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
-from django.template import loader
+from django.views import View
+from django.http import Http404
 
 from image.serializers import UploadedImageSerializer, ListUploadedImageBasicSerializer, \
     ListUploadedImageEnterpriseSerializer, ListUploadedImagePremiumSerializer, \
@@ -11,7 +12,6 @@ from image.models import UploadedImage, ExpiredLink
 from rest_framework import status, mixins, permissions
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
-from django.conf import settings
 
 
 class ModelCustomViewSet(
@@ -63,13 +63,10 @@ class UploadedImagesViewSet(ModelCustomViewSet):
         return Response(serializer.data)
 
 
-def load_url(request, title):
-    obj_exp_link = get_object_or_404(ExpiredLink, link=title)
-    context = {
-        "info_error": 'this link is expired'
-    }
-    if obj_exp_link.is_expired == True:
-        template = loader.get_template(f'{settings.BASE_DIR}/templates/image/expired_link.html')
-        return HttpResponseNotFound(template.render(context, request), status=status.HTTP_404_NOT_FOUND)
-    return redirect(f'/temp/{title}')
-
+class TempView(View):
+    def get(self, *args, **kwargs):
+        uuid = self.kwargs.get('uuid')
+        obj = get_object_or_404(ExpiredLink, uuid=uuid)
+        if obj.is_expired:
+            raise Http404
+        return redirect(f'/media/{obj.thumbnail.image}')
