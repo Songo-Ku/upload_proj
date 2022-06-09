@@ -26,7 +26,7 @@ class UploadedImage(models.Model):
 
     def save(self, **kwargs):
         self.thumbnail_200px = create_thumbnail(self.image, height_px=200)
-        if self.user.plan in [Plans.BASIC, Plans.PREMIUM, Plans.ENTERPRISE]:
+        if self.user.plan in [Plans.PREMIUM, Plans.ENTERPRISE]:
             self.thumbnail_400px = create_thumbnail(self.image, height_px=400)
         super(UploadedImage, self).save(**kwargs)
         if self.user.plan == Plans.ENTERPRISE and self.duration:
