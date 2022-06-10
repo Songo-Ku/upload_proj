@@ -38,7 +38,6 @@ class UploadedImagesViewSet(ModelCustomViewSet):
         else:
             self.serializer_class = CreateUploadedImageBasicSerializer
         serializer = self.get_serializer(data=request.data)
-        print(serializer)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)

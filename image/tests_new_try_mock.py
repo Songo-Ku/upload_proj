@@ -10,6 +10,7 @@ from user.factories import UserFactory
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
 
+
 FAKE_FILES_TEST_PATH = f'{settings.BASE_DIR}/fake_files/'
 UPLOADED_MEDIA_PATH = f'{settings.BASE_DIR}/uploaded_media/'
 TEMP_LINKS = f'{settings.BASE_DIR}/temp/'
