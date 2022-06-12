@@ -28,6 +28,7 @@ class UploadedImage(models.Model):
         self.thumbnail_200px = create_thumbnail(self.image, height_px=200)
         if self.user.plan in [Plans.PREMIUM, Plans.ENTERPRISE]:
             self.thumbnail_400px = create_thumbnail(self.image, height_px=400)
+        super(UploadedImage, self).save(**kwargs)
         if self.user.plan == Plans.ENTERPRISE and self.duration:
             expiry_date = datetime.now(POLAND_TZ) + timedelta(seconds=self.duration)
             uuid_ = uuid.uuid4()
@@ -35,8 +36,6 @@ class UploadedImage(models.Model):
                 thumbnail=self, expiry_date=expiry_date, uuid=uuid_
             )
             exp_link.save()
-        super(UploadedImage, self).save(**kwargs)
-
 
     def __str__(self):
         return f' uploaded file on pk number:  {self.pk}'

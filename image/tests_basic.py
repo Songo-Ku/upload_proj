@@ -7,7 +7,7 @@ from user.factories import UserFactory
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
 from pathlib import Path
-from .fakes import read_fake_image_png_to_post, create_fake_image_jpg_to_post
+from .fakes import read_fake_image_to_post, create_fake_image_jpg_to_post
 
 FAKE_FILES_TEST_PATH = f'{settings.BASE_DIR}/fake_files/'
 UPLOADED_MEDIA_PATH = f'{settings.BASE_DIR}/uploaded_media/'
@@ -74,7 +74,7 @@ class ImageListCreateViewSetBasicPlanTestCase(APITestCase):
     def test_added_obj_manually_to_db(self):
         new_uploaded_image = UploadedImage(
             user=self.user_basic,
-            image=read_fake_image_png_to_post(),
+            image=read_fake_image_to_post(),
         )
         new_uploaded_image.save()
         response1 = self.client.get(self.uploaded_image_list_url)
@@ -100,7 +100,7 @@ class ImageListCreateViewSetBasicPlanTestCase(APITestCase):
         list_of_images = ['image_test_1.png', 'image_test_2.png', 'image_test_3.jpg']
         for name_file in list_of_images:
             new_uploaded_image = UploadedImage(user=self.user_basic)
-            new_uploaded_image.image = read_fake_image_png_to_post(image_from_fakes=name_file)
+            new_uploaded_image.image = read_fake_image_to_post(image_from_fakes=name_file)
             new_uploaded_image.save()
 
     def test_list_records_return_proper_fields(self):

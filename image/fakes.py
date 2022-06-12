@@ -8,7 +8,7 @@ UPLOADED_MEDIA_PATH = f'{settings.BASE_DIR}/uploaded_media/'
 TEMP_LINKS = f'{settings.BASE_DIR}/temp/'
 
 
-def read_fake_image_png_to_post(image_from_fakes='image_test_1.png'):
+def read_fake_image_to_post(image_from_fakes='image_test_1.png'):
     ext = image_from_fakes.split(".")[-1]
     name = image_from_fakes.split(".")[0]
     simply_upload_test_file = SimpleUploadedFile(
