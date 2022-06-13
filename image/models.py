@@ -1,11 +1,16 @@
 import uuid
 from datetime import datetime, timedelta
+from backports.zoneinfo import ZoneInfo
+
 import pytz
 from django.db import models
 from django.core.validators import FileExtensionValidator
 from image.constants import Plans
 from image.utils import code_uploaded_filename, create_thumbnail  # ,create_image
 from user.models import User
+from django.utils.timezone import activate
+from django.utils import timezone
+
 
 POLAND_TZ = pytz.timezone("Europe/Warsaw")
 
@@ -50,9 +55,28 @@ class ExpiredLink(models.Model):
     )
     expiry_date = models.DateTimeField()
 
-    @property
-    def is_expired(self):
-        if self.expiry_date < datetime.now(POLAND_TZ):
+    def is_expired_standard(self):
+        print(' bez operacji exp date zapisany w exp standard')
+        print(self.expiry_date)
+        print(type(self.expiry_date))
+        if self.expiry_date.tzinfo == pytz.timezone("UTC"):
+            # test.astimezone(ZoneInfo("Europe/Warsaw")) #  to jest poprawny kod do ovnertowania z utc na europe
+
+
+
+
+
+
+            expired_date_ = self.expiry_date + timedelta(minutes=120)
+            print(expired_date_.astimezone(tz=ZoneInfo('Europe/Warsaw')), 'saved as europ from utc\n\n')
+
+            print('jest utc')
+        else:
+            expired_date_ = self.expiry_date
+            print(' nie jest utc')
+        print('to jest exp_date_  ', expired_date_, '\n')
+
+        if expired_date_ < datetime.now(POLAND_TZ):
             return True
         return False
 

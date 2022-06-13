@@ -67,6 +67,8 @@ class TempView(View):
     def get(self, *args, **kwargs):
         uuid = self.kwargs.get('uuid')
         obj = get_object_or_404(ExpiredLink, uuid=uuid)
-        if obj.is_expired:
+        if obj.is_expired_standard():
+            print('obj exp is true ')
             raise Http404
+        print('obj is not exp')
         return redirect(f'/media/{obj.thumbnail.image}')

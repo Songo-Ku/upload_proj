@@ -1,6 +1,8 @@
 import os
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
+import pytz
 from django.urls import reverse
 from rest_framework import status
 
@@ -11,10 +13,13 @@ from user.factories import UserFactory
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
 from pathlib import Path
+from django.utils import timezone
 
 FAKE_FILES_TEST_PATH = f'{settings.BASE_DIR}/fake_files/'
 UPLOADED_MEDIA_PATH = f'{settings.BASE_DIR}/uploaded_media/'
 TEMP_LINKS = f'{settings.BASE_DIR}/temp/'
+POLAND_TZ = pytz.timezone("Europe/Warsaw")
+UTC_TZ = pytz.timezone("UTC")
 
 
 class ImageListCreateViewSetEnterprisePlanTestCase(APITestCase):
@@ -69,7 +74,7 @@ class ImageListCreateViewSetEnterprisePlanTestCase(APITestCase):
     def uploaded_image_post_with_image_duration(self):
         valid_image = {
             "image": self.simply_upload_test_file,
-            "duration": 3000
+            "duration": 3600
         }
         response = self.client.post(
             self.uploaded_image_list_url,
@@ -92,7 +97,7 @@ class ImageListCreateViewSetEnterprisePlanTestCase(APITestCase):
 
     def test_enterprise_tier_has_duration(self):
         response = self.uploaded_image_post_with_image_duration()
-        self.assertEquals(response.data.get('duration', False), 3000)
+        self.assertEquals(response.data.get('duration', False), 3600)
 
     def test_enterprise_tier_has_not_duration(self):
         response = self.uploaded_image_post_with_image_only()
@@ -128,7 +133,7 @@ class ImageListCreateViewSetEnterprisePlanTestCase(APITestCase):
         response = self.uploaded_image_post_with_image_only()
         self.assertEquals(ExpiredLink.objects.count(), expired_link_count)
 
-    # @patch('image.models.ExpiredLink.is_expired')
+    # @patch('image.models.ExpiredLink.is_expired_standard')
     # def test_enterprise_tier_exp_link_is_expired(self, mock_is_expired):
     #     mock_is_expired = self.expiry_date < datetime.now(POLAND_TZ)
     #     expired_link_count = ExpiredLink.objects.count()
@@ -136,12 +141,41 @@ class ImageListCreateViewSetEnterprisePlanTestCase(APITestCase):
     #     self.assertEquals(ExpiredLink.objects.count(), expired_link_count + 1)
     # jak to zmockowac ?
 
-    def test_enterprise_tier_exp_link_is_not_expired(self):
+    # def test_enterprise_tier_exp_link_is_not_expired(self):
+    #     expired_link_count = ExpiredLink.objects.count()
+    #     response = self.uploaded_image_post_with_image_duration()
+    #     uploaded_image_obj = UploadedImage.objects.get(id=response.data.get("pk"))
+    #     print(uploaded_image_obj.expired_link.is_expired_standard())
+    #     self.assertEquals(uploaded_image_obj.expired_link.is_expired_standard(), False)
+
+    # @patch('image.models.ExpiredLink.is_expired_standard')
+    # def test_enterprise_tier_expired_link(self, mock_is_expired):
+    #     mock_is_expired.return_value = False
+    #     expired_link_count = ExpiredLink.objects.count()
+    #     response = self.uploaded_image_post_with_image_duration()
+    #     exp_link_obj = ExpiredLink.objects.get(pk=response.data.get("pk"))
+    #     # print('to jest mock is exp', exp_link_obj.is_expired_standard, '\n\n')
+    #     # "http://127.0.0.1:8000/temp/f0cca685-f451-44b5-a46a-ae475b32e27e/"
+    #     response = self.client.get(self.uploaded_image_list_url)
+    #     # print(response.data[0].get("expire_link"))
+    #     response_exp_link = self.client.get(response.data[0].get("expire_link"))
+    #     # print(response_exp_link)
+    #     self.assertEquals(ExpiredLink.objects.count(), expired_link_count + 1)
+    #     # "<HttpResponseNotFound status_code=404, "text/html">"
+    #     # "<HttpResponseRedirect status_code=302, "text/html; charset=utf-8", url="/media/c6c84500-8d94-4762-84a6-62ad00c13276.png">"
+
+    def test_check_instance_attr(self):
         expired_link_count = ExpiredLink.objects.count()
         response = self.uploaded_image_post_with_image_duration()
-        uploaded_image_obj = UploadedImage.objects.get(id=response.data.get("pk"))
-        print(uploaded_image_obj.expired_link.is_expired)
-        self.assertEquals(uploaded_image_obj.expired_link.is_expired, False)
+        exp_link_obj = ExpiredLink.objects.get(pk=response.data.get("pk"))
+        # print(datetime.now(POLAND_TZ) - timedelta(days=2), ' dt from datetime \n')
+
+        with patch.object(exp_link_obj, 'expiry_date', datetime.now(UTC_TZ) - timedelta(days=2)):
+            print('utc time with 2 days subtraction \n', datetime.now(UTC_TZ) - timedelta(days=2))
+            self.assertEqual(exp_link_obj.is_expired_standard(), True)
+            # self.assertEqual(exp_link_obj.expiry_date, datetime.now(POLAND_TZ) - timedelta(days=2))
+
+
 
 
 
