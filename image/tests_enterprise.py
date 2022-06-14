@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import pytz
+from backports.zoneinfo import ZoneInfo
 from django.urls import reverse
 from rest_framework import status
 
@@ -18,7 +19,8 @@ from django.utils import timezone
 FAKE_FILES_TEST_PATH = f'{settings.BASE_DIR}/fake_files/'
 UPLOADED_MEDIA_PATH = f'{settings.BASE_DIR}/uploaded_media/'
 TEMP_LINKS = f'{settings.BASE_DIR}/temp/'
-POLAND_TZ = pytz.timezone("Europe/Warsaw")
+# POLAND_TZ = pytz.timezone("Europe/Warsaw")
+TZ_POJECT = ZoneInfo(settings.TIME_ZONE)
 UTC_TZ = pytz.timezone("UTC")
 
 
@@ -29,6 +31,7 @@ class ImageListCreateViewSetEnterprisePlanTestCase(APITestCase):
         cls.user_enterprise = UserFactory(plan="Enterprise")
         cls.uploaded_images_all = UploadedImage.objects.all()
         cls.uploaded_images_all.delete()
+        cls.test_server_url = 'http://testserver'
         super().setUpClass()
 
     def setUp(self):
@@ -141,47 +144,48 @@ class ImageListCreateViewSetEnterprisePlanTestCase(APITestCase):
     #     self.assertEquals(ExpiredLink.objects.count(), expired_link_count + 1)
     # jak to zmockowac ?
 
-    # def test_enterprise_tier_exp_link_is_not_expired(self):
-    #     expired_link_count = ExpiredLink.objects.count()
-    #     response = self.uploaded_image_post_with_image_duration()
-    #     uploaded_image_obj = UploadedImage.objects.get(id=response.data.get("pk"))
-    #     print(uploaded_image_obj.expired_link.is_expired_standard())
-    #     self.assertEquals(uploaded_image_obj.expired_link.is_expired_standard(), False)
-
-    # @patch('image.models.ExpiredLink.is_expired_standard')
-    # def test_enterprise_tier_expired_link(self, mock_is_expired):
-    #     mock_is_expired.return_value = False
-    #     expired_link_count = ExpiredLink.objects.count()
-    #     response = self.uploaded_image_post_with_image_duration()
-    #     exp_link_obj = ExpiredLink.objects.get(pk=response.data.get("pk"))
-    #     # print('to jest mock is exp', exp_link_obj.is_expired_standard, '\n\n')
-    #     # "http://127.0.0.1:8000/temp/f0cca685-f451-44b5-a46a-ae475b32e27e/"
-    #     response = self.client.get(self.uploaded_image_list_url)
-    #     # print(response.data[0].get("expire_link"))
-    #     response_exp_link = self.client.get(response.data[0].get("expire_link"))
-    #     # print(response_exp_link)
-    #     self.assertEquals(ExpiredLink.objects.count(), expired_link_count + 1)
-    #     # "<HttpResponseNotFound status_code=404, "text/html">"
-    #     # "<HttpResponseRedirect status_code=302, "text/html; charset=utf-8", url="/media/c6c84500-8d94-4762-84a6-62ad00c13276.png">"
-
-    def test_check_instance_attr(self):
+    def test_enterprise_tier_expired_link_is_expired_standard_true(self):
         expired_link_count = ExpiredLink.objects.count()
         response = self.uploaded_image_post_with_image_duration()
         exp_link_obj = ExpiredLink.objects.get(pk=response.data.get("pk"))
-        # print(datetime.now(POLAND_TZ) - timedelta(days=2), ' dt from datetime \n')
-
-        with patch.object(exp_link_obj, 'expiry_date', datetime.now(UTC_TZ) - timedelta(days=2)):
-            print('utc time with 2 days subtraction \n', datetime.now(UTC_TZ) - timedelta(days=2))
+        dt = datetime.now(TZ_POJECT) - timedelta(days=2)
+        with patch.object(exp_link_obj, 'expiry_date', dt):
             self.assertEqual(exp_link_obj.is_expired_standard(), True)
-            # self.assertEqual(exp_link_obj.expiry_date, datetime.now(POLAND_TZ) - timedelta(days=2))
+            self.assertEqual(exp_link_obj.expiry_date, dt)
 
+    def test_enterprise_tier_exp_link_is_not_expired(self):
+        expired_link_count = ExpiredLink.objects.count()
+        response = self.uploaded_image_post_with_image_duration()
+        uploaded_image_obj = UploadedImage.objects.get(id=response.data.get("pk"))
+        self.assertEquals(uploaded_image_obj.expired_link.is_expired_standard(), False)
 
+    @patch('image.models.ExpiredLink.is_expired_standard')
+    def test_enterprise_tier_expired_link_true_reposne_404(self, mock_is_expired):
+        mock_is_expired.return_value = True
+        # create uploaded link with expired link
+        response = self.uploaded_image_post_with_image_duration()
+        # get request to retrieve link from created uploaded image
+        response = self.client.get(self.uploaded_image_list_url)
+        # request get to check is link expired and return 404
+        response_get_exp_link = self.client.get(response.data[0].get("expire_link"))
+        self.assertEquals(response_get_exp_link.status_code, 404)
+        for i in response_get_exp_link.context:
+            if i.get("exception"):
+                exception_ = i.get("exception", None)
+        self.assertIn(exception_, 'Http404')
 
-
-
-# testy redirectu
-#
-
+    @patch('image.models.ExpiredLink.is_expired_standard')
+    def test_enterprise_tier_expired_link_false_reposne_302(self, mock_is_expired):
+        mock_is_expired.return_value = False
+        # create uploaded link with expired link
+        response_post = self.uploaded_image_post_with_image_duration()
+        # print(response_post.data.get("image"))
+        # get request to retrieve link from created uploaded image
+        response = self.client.get(self.uploaded_image_list_url)
+        # request get to check is link expired and return 302 with show image
+        response_exp_link = self.client.get(response.data[0].get("expire_link"))
+        self.assertEquals(response_exp_link.status_code, 302)
+        self.assertEquals(self.test_server_url + response_exp_link.url, response_post.data.get("image"))
 
     def test_uploaded_image_saved_manually_to_db_with_duration_enterprise_tier(self):
         expired_link_count = ExpiredLink.objects.count()
