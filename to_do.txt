@@ -1,0 +1,7 @@
+finish list viewsets tests
+
+prepare test for tier2 premium which is part of enterprise tests
+
+admin custom
+
+docker heroku
